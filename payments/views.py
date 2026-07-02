@@ -1,3 +1,15 @@
-from django.shortcuts import render
+from rest_framework import status
+from rest_framework.views import APIView, Response
 
-# Create your views here.
+from payments.serializers import PaymentWebhookSerializer
+
+
+class PaymentWebhookView(APIView):
+
+    def post(self, request):
+
+        serializer = PaymentWebhookSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+
+        return Response(status=status.HTTP_200_OK)
