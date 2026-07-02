@@ -1,3 +1,18 @@
-from django.shortcuts import render
+from django.http import JsonResponse
 
-# Create your views here.
+from rest_framework import status
+from rest_framework.views import APIView, Response
+
+from customers.models import Customer
+from customers.serializers import CustomerSerializer
+
+class CustomersView(APIView):
+    def get(self, request):
+        
+        queryset = Customer.objects.filter(is_active=True)
+        serializer = CustomerSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        # Logic to create a new customer
+        return JsonResponse({"message": "Customer created"})
