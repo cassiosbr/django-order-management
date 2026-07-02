@@ -7,3 +7,4 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'price', 'description')
     search_fields = ('name', 'description')
     list_filter = ('name', 'description')
+    list_display_links = ('id', 'name')
