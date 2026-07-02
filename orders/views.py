@@ -1,7 +1,6 @@
 from rest_framework.views import APIView, Response
-
 from orders.serializers import OrderSerializer
-
+from orders.services import OrderService
 
 class OrdersView(APIView):
 
@@ -11,9 +10,14 @@ class OrdersView(APIView):
 
         serializer.is_valid(raise_exception=True)
 
+        order = OrderService().create_order(
+            serializer.validated_data
+        )
+
         return Response(
             {
-                "message": "Order created successfully",
+                "id": order.id,
+                "status": order.status
             },
             status=201
         )
