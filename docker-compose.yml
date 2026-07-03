@@ -7,6 +7,10 @@ services:
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     env_file:
       - .env
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318/v1/traces
+      - OTEL_SERVICE_NAME=django-order-management
+      - TZ=America/Sao_Paulo
     ports:
       - "8000:8000"
     volumes:
@@ -15,6 +19,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_started
+      otel-collector:
         condition: service_started
 
   celery:
@@ -25,6 +31,10 @@ services:
     command: celery -A setup worker --loglevel=info
     env_file:
       - .env
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318/v1/traces
+      - OTEL_SERVICE_NAME=django-order-management
+      - TZ=America/Sao_Paulo
     volumes:
       - .:/app
     depends_on:
@@ -32,6 +42,39 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      otel-collector:
+        condition: service_started
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.88.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    environment:
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml:ro
+    ports:
+      - "4319:4318"
+      - "55681:55681"
+      - "8888:8888"
+    depends_on:
+      jaeger:
+        condition: service_started
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "14250:14250"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_OTLP_GRPC_PORT: 4317
+      COLLECTOR_OTLP_HTTP_PORT: 4318
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+      TZ: America/Sao_Paulo
 
   db:
     image: postgres:16-alpine
