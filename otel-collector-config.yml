@@ -6,6 +6,14 @@ receivers:
 
 processors:
   batch:
+  tail_sampling:
+    policies:
+      - name: latency
+        type: latency
+        latency: {threshold_ms: 1000}
+      - name: error-rate
+        type: status_code
+        status_code: {status_codes: [ERROR]}
 
 exporters:
   otlphttp:
