@@ -12,7 +12,10 @@ Backend desenvolvido com Django REST Framework para gerenciamento de pedidos, ut
 - Celery
 - Docker
 - OpenTelemetry
-- Jaeger
+
+## Observabilidade
+- Métricas (Prometheus + Grafana)
+- Tracing (Jaeger)
 
 ## Arquitetura do Fluxo de Pedidos
 
