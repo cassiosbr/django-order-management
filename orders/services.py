@@ -15,18 +15,18 @@ class OrderService:
 
     @transaction.atomic
     def create_order(self, validated_data):
-        with tracer.start_as_current_span("create_order") as span:
+        with tracer.start_as_current_span("orders.service.create_order") as span:
             total_amount = sum(
                 item["product"].price * item["quantity"] for item in validated_data["items"]
             )
 
-            with tracer.start_as_current_span("db.create_order"):
+            with tracer.start_as_current_span("orders.db.create_order"):
                 order = Order.objects.create(
                     customer=validated_data["customer"],
                     total_amount=total_amount
                 )
 
-            with tracer.start_as_current_span("db.create_order_items") as db_span:
+            with tracer.start_as_current_span("orders.db.create_order_items") as db_span:
                 for item in validated_data["items"]:
                     OrderItem.objects.create(
                         order=order,

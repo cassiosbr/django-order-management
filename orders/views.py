@@ -9,7 +9,7 @@ tracer = trace.get_tracer(__name__)
 class OrdersView(APIView):
 
     def post(self, request):
-        with tracer.start_as_current_span("orders.post") as span:
+        with tracer.start_as_current_span("orders.api.create_order") as span:
             serializer = OrderSerializer(data=request.data)
 
             serializer.is_valid(raise_exception=True)

@@ -15,13 +15,13 @@ tracer = trace.get_tracer(__name__)
 
 @shared_task(auto_retry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 5})
 def process_new_order(order_id):
-    with tracer.start_as_current_span("process_new_order") as span:
+    with tracer.start_as_current_span("orders.tasks.process_new_order") as span:
         logger.info("Iniciando processamento de novo pedido %s", order_id)
         span.set_attribute("order.id", order_id)
 
         time.sleep(5)
 
-        with tracer.start_as_current_span("db.fetch_order"):
+        with tracer.start_as_current_span("orders.tasks.db.fetch_order"):
             order = Order.objects.get(id=order_id)
 
         send_order_confirmation_email(order)
@@ -31,13 +31,13 @@ def process_new_order(order_id):
 
 @shared_task(auto_retry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 5})
 def process_order(order_id):
-    with tracer.start_as_current_span("process_order") as span:
+    with tracer.start_as_current_span("orders.tasks.process_order") as span:
         logger.info("Iniciando processamento do pedido %s", order_id)
         span.set_attribute("order.id", order_id)
 
         time.sleep(5)
 
-        with tracer.start_as_current_span("db.fetch_order"):
+        with tracer.start_as_current_span("orders.tasks.db.fetch_order"):
             order = Order.objects.get(id=order_id)
 
         # State Machine (Máquina de estados) - Evitar processamento de pedidos não pagos.
@@ -62,7 +62,7 @@ def process_order(order_id):
 
 
 def create_invoice_preview(order):
-    with tracer.start_as_current_span("create_invoice_preview") as span:
+    with tracer.start_as_current_span("orders.tasks.create_invoice_preview") as span:
         folder = Path("invoices")
         folder.mkdir(exist_ok=True)
 
@@ -82,7 +82,7 @@ def create_invoice_preview(order):
 
 
 def send_order_confirmation_email(order):
-    with tracer.start_as_current_span("send_order_confirmation_email") as span:
+    with tracer.start_as_current_span("orders.tasks.send_order_confirmation_email") as span:
         logger.info("E-mail enviado para %s confirmando o pedido %s", order.customer, order.id)
         span.set_attribute("order.id", order.id)
         span.set_attribute("order.customer", str(order.customer))
@@ -90,7 +90,7 @@ def send_order_confirmation_email(order):
 
 
 def create_invoice(order):
-    with tracer.start_as_current_span("create_invoice") as span:
+    with tracer.start_as_current_span("orders.tasks.create_invoice") as span:
         folder = Path("invoices")
         folder.mkdir(exist_ok=True)
 
@@ -112,7 +112,7 @@ def create_invoice(order):
 
 
 def update_order_status(order, status):
-    with tracer.start_as_current_span("update_order_status") as span:
+    with tracer.start_as_current_span("orders.tasks.update_order_status") as span:
         time.sleep(5)
         order.status = status
         order.save()
