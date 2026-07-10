@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import logging
 import os
+
+from setup.otel import OTLPLoggingHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -117,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'America/Sao_Paulo'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -142,3 +145,44 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'fmt': '%(asctime)s %(levelname)s %(name)s %(message)s',
+        },
+        'simple': {
+            'format': '%(levelname)s %(name)s %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json',
+            'stream': 'ext://sys.stdout',
+        },
+        'otel': {
+            '()': 'setup.otel.OTLPLoggingHandler',
+            'level': 'INFO',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'otel'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'otel'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console', 'otel'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}

@@ -21,6 +21,7 @@ class OrdersView(APIView):
             span.set_attribute("order.id", order.id)
             span.set_attribute("http.method", request.method)
             span.set_attribute("http.route", request.path)
+            span.set_attribute("customer.id", order.customer.id)
 
         return Response(
             {

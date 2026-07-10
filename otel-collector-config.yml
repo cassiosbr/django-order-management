@@ -2,28 +2,27 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 processors:
   batch:
-  tail_sampling:
-    policies:
-      - name: latency
-        type: latency
-        latency: {threshold_ms: 1000}
-      - name: error-rate
-        type: status_code
-        status_code: {status_codes: [ERROR]}
 
 exporters:
   otlphttp:
-    endpoint: "http://jaeger:4318"
-  logging:
-    loglevel: debug
+    endpoint: "http://tempo:4318"
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+  debug: {}
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp, logging]
+      exporters: [otlphttp, debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [loki, debug]
